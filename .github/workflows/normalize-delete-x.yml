@@ -1,0 +1,45 @@
+name: Normalize Delete Controls
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace trash icons with compact x controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('🗑️', '×').replace('🗑', '×')
+          css = ".event .icon-btn,.check-delete,.note-delete{width:30px;height:30px;min-width:30px;padding:0;display:inline-grid;place-items:center;font-size:1rem;line-height:1;border-radius:999px;box-shadow:none}.note-delete{align-self:flex-start}.event .icon-btn:hover,.check-delete:hover,.note-delete:hover{background:#f4eee6}"
+          if css not in s:
+              s = s.replace('</style>', css + '\n</style>', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Validate inline JavaScript
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script[^>]*>(.*?)</script>', html, flags=re.S|re.I)
+          Path('/tmp/sidequest-inline.js').write_text('\n'.join(scripts), encoding='utf-8')
+          PY
+          node --check /tmp/sidequest-inline.js
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Replace trash icons with compact x buttons"
+          git push
