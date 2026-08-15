@@ -1,0 +1,46 @@
+name: Flatten Roux Home
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Flatten Roux home treatment
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          old = ".home-hero{padding-right:112px;min-height:160px}.home-hero:after{display:none}.roux-home{position:absolute;right:12px;top:12px;width:88px;border:2px solid var(--i);border-radius:18px;background:white;box-shadow:3px 3px 0 var(--i);padding:6px;text-align:center;cursor:pointer}.roux-home img{width:70px;height:70px;object-fit:contain;display:block;margin:auto;border-radius:12px}.roux-home strong{display:block;font-size:.68rem;line-height:1.05;margin-top:3px;text-transform:uppercase}.roux-home small{display:block;font-size:.56rem;color:#6c6862;font-weight:800;margin-top:2px}.roux-placeholder{font-size:2rem;line-height:54px}"
+          new = ".home-hero{padding-right:126px;min-height:160px}.home-hero:after{display:none}.roux-home{position:absolute;right:8px;top:8px;width:112px;height:112px;border:0;border-radius:0;background:transparent;box-shadow:none;padding:0;text-align:center;cursor:pointer;display:grid;place-items:center;-webkit-tap-highlight-color:transparent}.roux-home img{width:108px;height:108px;object-fit:contain;display:block;margin:auto;border-radius:0;filter:drop-shadow(2px 3px 0 rgba(23,23,23,.12))}.roux-home strong,.roux-home small{display:none}.roux-placeholder{font-size:2.35rem;line-height:1}"
+          if old not in s:
+              raise SystemExit('Desktop Roux CSS target not found')
+          s = s.replace(old, new, 1)
+          old_mobile = ".home-hero{padding-right:94px}.roux-home{width:76px}.roux-home img{width:58px;height:58px}"
+          new_mobile = ".home-hero{padding-right:108px}.roux-home{width:96px;height:96px;right:4px;top:8px}.roux-home img{width:94px;height:94px}"
+          if old_mobile not in s:
+              raise SystemExit('Mobile Roux CSS target not found')
+          s = s.replace(old_mobile, new_mobile, 1)
+          old_render = "box.innerHTML=`<img src=\"${asset(S.profile.rouxImage)}\" alt=\"Your Roux\"><strong>${S.profile.rouxPersonality||'ROUX'}</strong>`"
+          new_render = "box.innerHTML=`<img src=\"${asset(S.profile.rouxImage)}\" alt=\"Your Roux\">`"
+          if old_render not in s:
+              raise SystemExit('Roux render target not found')
+          s = s.replace(old_render, new_render, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit Roux styling
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Flatten Roux on home screen"
+          git push
