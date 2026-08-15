@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f5f0e8" />
+  <title>Sidequest | Keep track of your stuff. And yourself.</title>
+  <style>
+    :root{
+      --ink:#161616;--paper:#f5f0e8;--paper-2:#fffaf2;--purple:#7c5cff;--pink:#ff7fb4;--lime:#c9f56a;--blue:#7ad8ff;--orange:#ffad66;--yellow:#ffe36e;--red:#ff6b6b;--green:#65d6a6;--muted:#716d67;--line:#1b1b1b;--shadow:5px 5px 0 #1b1b1b;--radius:22px;
+    }
+    *{box-sizing:border-box}
+    html{background:#e8e2d9}
+    body{margin:0;font-family:Inter,ui-rounded,"SF Pro Rounded",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(circle at 15% 15%,rgba(124,92,255,.10) 0 2px,transparent 2.5px) 0 0/26px 26px,var(--paper);min-height:100vh;padding-bottom:100px}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:760px;margin:0 auto;min-height:100vh}
+    .topbar{padding:calc(18px + env(safe-area-inset-top)) 18px 8px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;position:sticky;top:0;z-index:20;background:linear-gradient(var(--paper) 80%,rgba(245,240,232,0));backdrop-filter:blur(8px)}
+    .brand{display:flex;align-items:flex-start;gap:10px}
+    .logo{font-size:clamp(2rem,7vw,3.2rem);font-weight:1000;letter-spacing:-.06em;line-height:.9;text-transform:uppercase;transform:rotate(-1deg)}
+    .logo span{display:inline-block;background:var(--ink);color:white;padding:8px 10px 9px;border-radius:8px;box-shadow:3px 3px 0 var(--purple)}
+    .tagline{font-size:.78rem;font-weight:750;color:var(--muted);margin-top:6px}
+    .sticker{border:2px solid var(--ink);border-radius:999px;background:var(--yellow);padding:7px 10px;font-weight:900;font-size:.72rem;box-shadow:2px 2px 0 var(--ink);transform:rotate(4deg);white-space:nowrap}
+    main{padding:6px 18px 20px}
+    .screen{display:none;animation:pop .24s ease}
+    .screen.active{display:block}
+    @keyframes pop{from{opacity:.2;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .hero{margin:16px 0 18px;padding:22px;border:3px solid var(--ink);border-radius:28px;background:var(--paper-2);box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .hero:after{content:"✦";position:absolute;right:18px;top:8px;font-size:54px;color:var(--pink);transform:rotate(12deg)}
+    .eyebrow{text-transform:uppercase;font-size:.72rem;font-weight:1000;letter-spacing:.14em;color:var(--purple)}
+    h1,h2,h3,p{margin-top:0}
+    h1{font-size:clamp(2rem,8vw,4rem);line-height:.94;letter-spacing:-.055em;margin:.25rem 0 .7rem;max-width:85%}
+    h2{font-size:1.35rem;letter-spacing:-.025em;margin-bottom:12px}
+    h3{font-size:1rem;margin-bottom:8px}
+    .hero p{color:var(--muted);font-weight:650;max-width:540px;margin:0}
+    .section{margin:24px 0}
+    .section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .section-title{display:flex;align-items:center;gap:8px;font-size:1.25rem;font-weight:1000;letter-spacing:-.03em}
+    .tiny{font-size:.74rem;color:var(--muted);font-weight:700}
+    .card{border:2.5px solid var(--ink);background:var(--paper-2);border-radius:var(--radius);box-shadow:4px 4px 0 var(--ink)}
+    .today-grid{display:grid;gap:12px}
+    .event{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center;padding:14px}
+    .time{font-size:.8rem;font-weight:1000;color:var(--purple);line-height:1.1}
+    .event-title{font-weight:950}
+    .event-sub{color:var(--muted);font-size:.78rem;font-weight:700;margin-top:3px}
+    .event-dot{width:14px;height:14px;border:2px solid var(--ink);border-radius:50%;background:var(--blue)}
+    .btn{border:2px solid var(--ink);background:white;color:var(--ink);padding:10px 13px;border-radius:12px;font-weight:900;box-shadow:2px 2px 0 var(--ink)}
+    .btn:active{transform:translate(2px,2px);box-shadow:none}
+    .btn.primary{background:var(--purple);color:white}
+    .btn.small{padding:7px 10px;font-size:.75rem}
+    .btn.ghost{box-shadow:none;background:transparent;border-style:dashed}
+    .check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .check{border:2px solid var(--ink);border-radius:16px;background:white;padding:14px 12px;display:flex;align-items:center;gap:10px;font-weight:950;text-align:left;min-height:58px;transition:.18s}
+    .check .box{width:22px;height:22px;border:2px solid var(--ink);border-radius:6px;display:grid;place-items:center;flex:0 0 auto;background:var(--paper)}
+    .check.done{opacity:.42;transform:scale(.98);text-decoration:line-through}
+    .check.done .box{background:var(--lime)}
+    .check.done .box:after{content:"✓";font-weight:1000}
+    .quick-note{margin-top:16px;background:var(--yellow);padding:15px 16px;border:2px solid var(--ink);box-shadow:3px 3px 0 var(--ink);transform:rotate(-1deg);font-weight:900;position:relative}
+    .quick-note:before{content:"";position:absolute;width:60px;height:18px;background:rgba(255,255,255,.55);top:-10px;left:50%;transform:translateX(-50%) rotate(2deg);border:1px solid rgba(0,0,0,.08)}
+    .mood-intro{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center}
+    .bubble{width:74px;height:74px;border-radius:26px;border:3px solid var(--ink);display:grid;place-items:center;background:var(--pink);box-shadow:4px 4px 0 var(--ink);font-size:2.4rem;transform:rotate(4deg)}
+    .feelings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .feeling{border:3px solid var(--ink);min-height:105px;border-radius:24px;padding:14px;font-weight:1000;font-size:1.05rem;box-shadow:3px 3px 0 var(--ink);display:flex;justify-content:space-between;align-items:flex-end;transition:.18s}
+    .feeling:hover,.feeling.selected{transform:translateY(-3px) rotate(-1deg);box-shadow:6px 6px 0 var(--ink)}
+    .feeling .emoji{font-size:2rem}
+    .feel-happy{background:var(--yellow)}.feel-sad{background:var(--blue)}.feel-angry{background:var(--red)}.feel-scared{background:#c9b6ff}.feel-bad{background:#ddd4cb}.feel-surprised{background:var(--orange)}.feel-disgusted{background:var(--green)}.feel-calm{background:var(--lime)}
+    .subfeelings{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+    .chip{border:2px solid var(--ink);background:white;border-radius:999px;padding:9px 12px;font-weight:850}
+    .chip.active{background:var(--ink);color:white}
+    .support-panel{display:none;padding:18px;margin-top:14px;background:#fff;border:3px solid var(--ink);border-radius:22px;box-shadow:4px 4px 0 var(--ink)}
+    .support-panel.show{display:block;animation:pop .24s ease}
+    .tool-list{display:grid;gap:9px;margin-top:12px}
+    .tool{padding:12px;border:2px dashed var(--ink);border-radius:14px;background:var(--paper)}
+    .tool strong{display:block;margin-bottom:3px}
+    .packing-tabs{display:flex;gap:8px;overflow:auto;padding:2px 2px 10px;scrollbar-width:none}
+    .packing-tabs::-webkit-scrollbar{display:none}
+    .pack-tab{border:2px solid var(--ink);border-radius:999px;background:white;padding:9px 12px;font-weight:900;white-space:nowrap;box-shadow:2px 2px 0 var(--ink)}
+    .pack-tab.active{background:var(--pink)}
+    .pack-list{display:grid;gap:9px;margin-top:10px}
+    .pack-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border:2px solid var(--ink);border-radius:15px;background:white;font-weight:850}
+    .pack-item input{width:20px;height:20px;accent-color:var(--purple)}
+    .add-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}
+    input,textarea,select{width:100%;border:2px solid var(--ink);border-radius:12px;background:white;padding:11px 12px;color:var(--ink);outline:none}
+    input:focus,textarea:focus,select:focus{box-shadow:0 0 0 4px rgba(124,92,255,.17)}
+    .wall{min-height:500px;border:3px solid var(--ink);border-radius:26px;background:linear-gradient(90deg,rgba(0,0,0,.04) 1px,transparent 1px),linear-gradient(rgba(0,0,0,.04) 1px,transparent 1px),#d9b98f;background-size:28px 28px;padding:22px 16px 26px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+    .wall:before{content:"THE WALL";position:absolute;right:12px;top:12px;border:2px solid var(--ink);background:white;padding:5px 9px;font-size:.7rem;font-weight:1000;transform:rotate(4deg)}
+    .notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;padding-top:26px;align-items:start}
+    .note{min-height:130px;padding:18px 14px 14px;border:2px solid var(--ink);box-shadow:3px 4px 0 rgba(0,0,0,.65);font-weight:850;position:relative;word-break:break-word}
+    .note:nth-child(3n+1){background:var(--yellow);transform:rotate(-2deg)}.note:nth-child(3n+2){background:#ffb8d2;transform:rotate(1.5deg)}.note:nth-child(3n){background:#aee8ff;transform:rotate(-.5deg)}
+    .note:before{content:"";position:absolute;width:48px;height:15px;background:rgba(255,255,255,.55);top:-8px;left:50%;transform:translateX(-50%) rotate(-4deg)}
+    .note-actions{display:flex;justify-content:flex-end;margin-top:12px}
+    .x{border:0;background:transparent;font-weight:1000;font-size:1rem;padding:2px 5px}
+    .note-form{margin-top:14px;padding:14px;border:3px solid var(--ink);border-radius:20px;background:var(--paper-2);box-shadow:4px 4px 0 var(--ink)}
+    .note-form textarea{min-height:80px;resize:vertical}
+    .nav{position:fixed;left:50%;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(calc(100% - 20px),720px);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;background:#151515;border:2px solid #151515;border-radius:22px;padding:6px;z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+    .nav button{border:0;border-radius:16px;background:transparent;color:#c8c5bf;padding:9px 4px 8px;font-size:.68rem;font-weight:900;display:grid;place-items:center;gap:3px}
+    .nav button .ico{font-size:1.25rem;line-height:1}
+    .nav button.active{background:white;color:var(--ink)}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:100;display:none;align-items:flex-end;justify-content:center;padding:16px}
+    .modal.show{display:flex}
+    .sheet{width:min(100%,700px);background:var(--paper);border:3px solid var(--ink);border-radius:28px;padding:18px;box-shadow:6px 6px 0 var(--ink);animation:sheet .22s ease}
+    @keyframes sheet{from{transform:translateY(20px);opacity:.2}to{transform:none;opacity:1}}
+    .sheet-grid{display:grid;gap:10px}
+    .sheet-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+    .footer-note{text-align:center;color:var(--muted);font-size:.72rem;font-weight:700;margin:28px 0 8px}
+    @media(min-width:650px){.today-grid{grid-template-columns:1fr 1fr}.check-grid{grid-template-columns:repeat(4,1fr)}.feelings-grid{grid-template-columns:repeat(4,1fr)}.notes{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div>
+          <div class="logo"><span>Sidequest</span></div>
+          <div class="tagline">Keep track of your stuff. And yourself.</div>
+        </div>
+      </div>
+      <div class="sticker">★ YOUR DAY</div>
+    </header>
+
+    <main>
+      <section class="screen active" id="today">
+        <div class="hero">
+          <div class="eyebrow" id="todayDate">TODAY</div>
+          <h1>Okay. What’s the quest?</h1>
+          <p>Your schedule, the stuff you need, and the one thing you absolutely cannot forget.</p>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><div class="section-title">🗓 My Day</div><button class="btn small primary" id="addEventBtn">+ ADD</button></div>
+          <div class="today-grid" id="eventList"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><div><div class="section-title">🎒 Before I Leave</div><div class="tiny">Tap it when it’s in your hands or bag.</div></div><button class="btn small ghost" id="resetLeave">RESET</button></div>
+          <div class="check-grid" id="leaveChecklist"></div>
+          <div class="add-row"><input id="newLeaveItem" placeholder="Add your own thing…"><button class="btn" id="addLeaveItem">ADD</button></div>
+          <div class="quick-note" id="pinnedNote">📌 PINNED: Text Maya about Saturday.</div>
+        </div>
+      </section>
+
+      <section class="screen" id="feelings">
+        <div class="hero">
+          <div class="mood-intro">
+            <div><div class="eyebrow">CHECK IN</div><h1>What’s going on in there?</h1><p>No essay required. Start with the closest thing.</p></div>
+            <div class="bubble">🫠</div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Pick the big feeling</div>
+          <div class="feelings-grid" id="feelingsGrid"></div>
+          <div class="support-panel" id="supportPanel">
+            <div class="eyebrow">ZOOM IN</div>
+            <h2 id="supportTitle">What kind of feeling?</h2>
+            <div class="subfeelings" id="subfeelings"></div>
+            <div id="supportDetails"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="pack">
+        <div class="hero">
+          <div class="eyebrow">PACK IT</div>
+          <h1>Future you would like their charger.</h1>
+          <p>Start with a list, change whatever you want, and stop relying on the 6:42 AM panic inventory.</p>
+        </div>
+        <div class="section">
+          <div class="packing-tabs" id="packTabs"></div>
+          <div class="card" style="padding:16px">
+            <div class="section-head"><div><div class="section-title" id="packTitle">✈️ Vacation</div><div class="tiny">This list saves on this device.</div></div><button class="btn small ghost" id="resetPack">RESET</button></div>
+            <div class="pack-list" id="packList"></div>
+            <div class="add-row"><input id="newPackItem" placeholder="Add something to this list…"><button class="btn" id="addPackItem">ADD</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="wallScreen">
+        <div class="hero">
+          <div class="eyebrow">BRAIN DUMP</div>
+          <h1>Put it on The Wall.</h1>
+          <p>Quick reminders, weird little thoughts, due dates, and things your brain is refusing to hold onto.</p>
+        </div>
+        <div class="wall">
+          <div class="notes" id="notes"></div>
+        </div>
+        <div class="note-form">
+          <div class="section-title">+ New sticky</div>
+          <textarea id="noteText" placeholder="Do not forget…"></textarea>
+          <div class="sheet-actions"><button class="btn primary" id="addNote">STICK IT</button></div>
+        </div>
+      </section>
+
+      <div class="footer-note">SIDEQUEST POC • everything here stays in your browser</div>
+    </main>
+  </div>
+
+  <nav class="nav" aria-label="Main navigation">
+    <button class="active" data-screen="today"><span class="ico">☀️</span><span>TODAY</span></button>
+    <button data-screen="feelings"><span class="ico">🌀</span><span>FEELINGS</span></button>
+    <button data-screen="pack"><span class="ico">🎒</span><span>PACK</span></button>
+    <button data-screen="wallScreen"><span class="ico">🗒️</span><span>THE WALL</span></button>
+  </nav>
+
+  <div class="modal" id="eventModal" role="dialog" aria-modal="true" aria-label="Add event">
+    <div class="sheet">
+      <div class="eyebrow">ADD TO MY DAY</div><h2>What’s happening?</h2>
+      <div class="sheet-grid">
+        <input id="eventTitle" placeholder="School, therapy, work…">
+        <input id="eventTime" type="time">
+        <input id="eventWhere" placeholder="Where? (optional)">
+      </div>
+      <div class="sheet-actions"><button class="btn ghost" id="closeEvent">CANCEL</button><button class="btn primary" id="saveEvent">SAVE</button></div>
+    </div>
+  </div>
+
+<script>
+  const STORE='sidequest-poc-v1';
+  const defaults={
+    events:[
+      {id:1,time:'08:15',title:'School',where:'Main building'},
+      {id:2,time:'15:45',title:'Therapy',where:'Downtown'},
+      {id:3,time:'18:00',title:'Work shift',where:'Café'}
+    ],
+    leave:[
+      {id:'phone',label:'📱 Phone',done:false},{id:'keys',label:'🔑 Keys',done:false},{id:'bag',label:'🎒 Backpack',done:false},{id:'charger',label:'🔌 Charger',done:false},{id:'water',label:'💧 Water',done:false},{id:'lunch',label:'🥪 Lunch',done:false},{id:'meds',label:'💊 Meds',done:false},{id:'homework',label:'📚 Homework',done:false}
+    ],
+    packType:'vacation',
+    packs:{
+      vacation:[['Phone charger',false],['Headphones',false],['Toothbrush',false],['Deodorant',false],['Pajamas',false],['Underwear + socks',false],['Swimsuit',false],['Hoodie',false],['Meds',false],['Something to do in the car',false]],
+      school:[['Backpack',false],['Laptop / Chromebook',false],['Charger',false],['Homework',false],['Water bottle',false],['Lunch',false],['Gym clothes',false],['Keys',false]],
+      sleepover:[['Phone charger',false],['Pajamas',false],['Toothbrush',false],['Clean clothes',false],['Meds',false],['Headphones',false]],
+      practice:[['Uniform / gear',false],['Shoes',false],['Water bottle',false],['Snack',false],['Hair tie / headband',false],['Deodorant',false]]
+    },
+    notes:['Ask about Saturday plans','English paper due Friday','Bring art project'],
+    pinned:'Text Maya about Saturday.'
+  };
+  let state=load();
+  function load(){try{return Object.assign(structuredClone(defaults),JSON.parse(localStorage.getItem(STORE)||'{}'))}catch{return structuredClone(defaults)}}
+  function save(){localStorage.setItem(STORE,JSON.stringify(state))}
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+  const d=new Date();
+  $('#todayDate').textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}).toUpperCase();
+
+  $$('.nav button').forEach(btn=>btn.addEventListener('click',()=>{
+    $$('.nav button').forEach(x=>x.classList.toggle('active',x===btn));
+    $$('.screen').forEach(s=>s.classList.toggle('active',s.id===btn.dataset.screen));
+    window.scrollTo({top:0,behavior:'smooth'});
+  }));
+
+  function renderEvents(){
+    const box=$('#eventList');box.innerHTML='';
+    [...state.events].sort((a,b)=>a.time.localeCompare(b.time)).forEach(ev=>{
+      const el=document.createElement('div');el.className='event card';
+      const pretty=new Date('2000-01-01T'+ev.time).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+      el.innerHTML=`<div class="time">${pretty}</div><div><div class="event-title">${escapeHtml(ev.title)}</div><div class="event-sub">${escapeHtml(ev.where||'')}</div></div><button class="x" aria-label="Delete">×</button>`;
+      el.querySelector('.x').onclick=()=>{state.events=state.events.filter(x=>x.id!==ev.id);save();renderEvents()};
+      box.appendChild(el);
+    });
+    if(!state.events.length)box.innerHTML='<div class="card" style="padding:16px;font-weight:850">Nothing here yet. Suspiciously peaceful. 👀</div>';
+  }
+  renderEvents();
+  const modal=$('#eventModal');
+  $('#addEventBtn').onclick=()=>modal.classList.add('show');
+  $('#closeEvent').onclick=()=>modal.classList.remove('show');
+  modal.addEventListener('click',e=>{if(e.target===modal)modal.classList.remove('show')});
+  $('#saveEvent').onclick=()=>{
+    const title=$('#eventTitle').value.trim(),time=$('#eventTime').value,where=$('#eventWhere').value.trim();
+    if(!title||!time)return;
+    state.events.push({id:Date.now(),title,time,where});save();renderEvents();
+    $('#eventTitle').value='';$('#eventTime').value='';$('#eventWhere').value='';modal.classList.remove('show');
+  };
+
+  function renderLeave(){
+    const box=$('#leaveChecklist');box.innerHTML='';
+    state.leave.forEach(item=>{
+      const b=document.createElement('button');b.className='check'+(item.done?' done':'');
+      b.innerHTML=`<span class="box"></span><span>${escapeHtml(item.label)}</span>`;
+      b.onclick=()=>{item.done=!item.done;save();renderLeave()};box.appendChild(b);
+    });
+  }
+  renderLeave();
+  $('#addLeaveItem').onclick=()=>{const v=$('#newLeaveItem').value.trim();if(!v)return;state.leave.push({id:String(Date.now()),label:'✨ '+v,done:false});$('#newLeaveItem').value='';save();renderLeave()};
+  $('#resetLeave').onclick=()=>{state.leave.forEach(x=>x.done=false);save();renderLeave()};
+  $('#pinnedNote').textContent='📌 PINNED: '+state.pinned;
+
+  const feelings={
+    Happy:{emoji:'😄',class:'feel-happy',subs:['Proud','Excited','Playful','Hopeful','Connected'],message:'Something is working. You can enjoy it without immediately turning it into homework.',tools:[['Notice it','Take ten seconds and actually let your brain register the good thing.'],['Share it','Text somebody who gets why this matters.']]},
+    Sad:{emoji:'😔',class:'feel-sad',subs:['Lonely','Disappointed','Hurt','Guilty','Drained'],message:'Sad can mean you lost something, wanted something different, or you’re just running on empty.',tools:[['Lower the bar','Pick the smallest useful next thing, not the perfect next thing.'],['Get near safe people','You do not have to explain everything to be around someone.']]},
+    Angry:{emoji:'😤',class:'feel-angry',subs:['Annoyed','Frustrated','Furious','Jealous','Betrayed','Overwhelmed'],message:'Anger often shows up when something feels unfair, blocked, unsafe, or way too much.',tools:[['Cool your body','Cold water on your face, step outside, unclench your jaw, move around.'],['Delay the send','If you wrote the nuclear text, save it for ten minutes before hitting send.'],['Name the actual problem','“I’m mad because…” is more useful than “everything is stupid.”']]},
+    Scared:{emoji:'😬',class:'feel-scared',subs:['Anxious','Nervous','Insecure','Worried','Panicky'],message:'Your brain is predicting danger. That does not automatically mean danger is happening right now.',tools:[['Find five facts','Name what you know, not what your brain is guessing.'],['Longer exhale','Breathe in normally and make the exhale a little longer.'],['Shrink the timeline','What do you need for the next ten minutes?']]},
+    Bad:{emoji:'🫥',class:'feel-bad',subs:['Bored','Tired','Numb','Embarrassed','Stuck'],message:'“Bad” counts. You do not need a perfect emotion word before you can take care of yourself.',tools:[['Check basics','Food? water? sleep? meds? sensory overload?'],['Change one input','Different room, music, lighting, clothes, or activity.']]},
+    Surprised:{emoji:'😳',class:'feel-surprised',subs:['Shocked','Confused','Amazed','Startled'],message:'Your brain just got information it was not ready for. Give it a second to catch up.',tools:[['Do nothing for a minute','You are allowed to process before reacting.'],['Ask one question','Get the missing fact before building a whole story.']]},
+    Disgusted:{emoji:'🤢',class:'feel-disgusted',subs:['Grossed out','Uncomfortable','Judgy','Repulsed'],message:'Disgust can be physical, social, or a clue that something crossed a boundary.',tools:[['Create space','Move away from the thing if you can.'],['Check the boundary','Is this “I dislike it” or “this is not okay for me”?']]},
+    Calm:{emoji:'😌',class:'feel-calm',subs:['Safe','Content','Focused','Chill','Grounded'],message:'Your nervous system has some room right now. This is a good time to notice what helped.',tools:[['Bank the clue','What made today easier? Save that for future you.'],['Use the room','Do one thing that is harder when you are overwhelmed.']]}
+  };
+  function renderFeelings(){
+    const grid=$('#feelingsGrid');grid.innerHTML='';
+    Object.entries(feelings).forEach(([name,f])=>{
+      const b=document.createElement('button');b.className=`feeling ${f.class}`;b.innerHTML=`<span>${name}</span><span class="emoji">${f.emoji}</span>`;
+      b.onclick=()=>openFeeling(name,b);grid.appendChild(b);
+    });
+  }
+  renderFeelings();
+  function openFeeling(name,button){
+    $$('.feeling').forEach(x=>x.classList.remove('selected'));button.classList.add('selected');
+    const f=feelings[name],panel=$('#supportPanel');panel.classList.add('show');$('#supportTitle').textContent=`What kind of ${name.toLowerCase()}?`;
+    const chips=$('#subfeelings');chips.innerHTML='';
+    f.subs.forEach(sub=>{const c=document.createElement('button');c.className='chip';c.textContent=sub;c.onclick=()=>{$$('.chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');renderSupport(name,sub)};chips.appendChild(c)});
+    renderSupport(name,'');setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'start'}),80);
+  }
+  function renderSupport(name,sub){const f=feelings[name];$('#supportDetails').innerHTML=`<div class="card" style="padding:15px;background:var(--paper)"><strong>${sub?escapeHtml(sub)+'. ':''}</strong>${escapeHtml(f.message)}</div><div class="tool-list">${f.tools.map(t=>`<div class="tool"><strong>${escapeHtml(t[0])}</strong>${escapeHtml(t[1])}</div>`).join('')}</div>`}
+
+  const packMeta={vacation:['✈️','Vacation'],school:['🏫','School Day'],sleepover:['🌙','Sleepover'],practice:['🏀','Practice / Game']};
+  function renderPackTabs(){const tabs=$('#packTabs');tabs.innerHTML='';Object.entries(packMeta).forEach(([k,v])=>{const b=document.createElement('button');b.className='pack-tab'+(state.packType===k?' active':'');b.textContent=v[0]+' '+v[1];b.onclick=()=>{state.packType=k;save();renderPackTabs();renderPack()};tabs.appendChild(b)})}
+  function renderPack(){const [ico,label]=packMeta[state.packType];$('#packTitle').textContent=`${ico} ${label}`;const box=$('#packList');box.innerHTML='';state.packs[state.packType].forEach((item,i)=>{const row=document.createElement('label');row.className='pack-item';row.innerHTML=`<input type="checkbox" ${item[1]?'checked':''}><span>${escapeHtml(item[0])}</span>`;row.querySelector('input').onchange=e=>{item[1]=e.target.checked;save()};box.appendChild(row)})}
+  renderPackTabs();renderPack();
+  $('#addPackItem').onclick=()=>{const v=$('#newPackItem').value.trim();if(!v)return;state.packs[state.packType].push([v,false]);$('#newPackItem').value='';save();renderPack()};
+  $('#resetPack').onclick=()=>{state.packs[state.packType].forEach(x=>x[1]=false);save();renderPack()};
+
+  function renderNotes(){const box=$('#notes');box.innerHTML='';state.notes.forEach((note,i)=>{const el=document.createElement('div');el.className='note';el.innerHTML=`<div>${escapeHtml(note)}</div><div class="note-actions"><button class="x" title="Pin to Today">📌</button><button class="x" title="Delete">×</button></div>`;const [pin,del]=el.querySelectorAll('.x');pin.onclick=()=>{state.pinned=note;$('#pinnedNote').textContent='📌 PINNED: '+note;save();};del.onclick=()=>{state.notes.splice(i,1);save();renderNotes()};box.appendChild(el)});if(!state.notes.length)box.innerHTML='<div class="note" style="background:white">Your wall is suspiciously organized.</div>'}
+  renderNotes();
+  $('#addNote').onclick=()=>{const v=$('#noteText').value.trim();if(!v)return;state.notes.unshift(v);$('#noteText').value='';save();renderNotes()};
+
+  function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[c]))}
+</script>
+</body>
+</html>
