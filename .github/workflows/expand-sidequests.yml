@@ -1,0 +1,48 @@
+name: Expand Sidequests
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Expand quest library and simplify delete controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          quests=[
+          "Take a photo of something that looks accidentally artistic.","Find the weirdest object within 20 feet of you.","Drink a full glass of water like you just unlocked a health potion.","Send someone a meme you know they'll appreciate.","Go outside for exactly five minutes. No productivity allowed.","Find something in your room you forgot you owned.","Make a three-song soundtrack for your current mood.","Draw a terrible picture of Roux in under 60 seconds.","Put one thing away that has been living in the wrong place.","Learn one completely useless fact.","Take a photo from the lowest angle you can manage.","Rename an ordinary object nearby like it's a legendary artifact.","Text someone one specific thing you appreciate about them.","Stand somewhere you normally sit for two minutes.","Find the softest thing in the room and touch it.","Make up a dramatic backstory for the nearest inanimate object.","Listen to a song you loved three years ago.","Look out a window and find five different colors.","Do ten ridiculous victory poses.","Write down the funniest thing you've heard this week.","Find an animal outside, even if it's just a bug.","Take a picture of a shadow.","Invent a new holiday and decide what people eat on it.","Try to balance something harmless on your head for 30 seconds.","Find something smaller than your thumbnail.","Make your phone wallpaper something different for the next hour.","Walk into another room and notice three things you've never really looked at.","Write a six-word autobiography for today.","Pick a random letter and find five things around you that start with it.","Make the fanciest possible snack from whatever is available.","Do one chore badly but completely.","Find the oldest object you can see.","Write a one-sentence review of your day so far.","Listen to one song without doing anything else.","Find something that smells good.","Make a tiny paper creature from scrap paper.","Take a photo that would make a confusing album cover.","Choose a new nickname for yourself for the next ten minutes.","Find something you can donate or get rid of.","Do 20 seconds of the worst dancing you can produce.","Look up what the moon is doing tonight.","Find a word you've never used and work it into a sentence.","Rearrange three objects to make your space slightly better.","Make up a secret handshake with yourself. Logistics are your problem.","Find a cloud that looks vaguely like something else.","Write a tiny note for future-you to find later.","See how many different sounds you can hear in one minute.","Find the most dramatic lighting in your house and stand in it.","Make a snack or drink and rate it like a food critic.","Take a photo using only reflections.","Find something that is exactly your favorite color.","Make a list of three things you would put in a time capsule today.","Look at the last photo you took and give it a ridiculous title.","Do one tiny favor for someone without announcing it.","Find the strangest Wikipedia page you can in three clicks or fewer.","Build the smallest tower you can from nearby objects.","Write a two-line poem about whatever is directly in front of you.","Pick a number from 1 to 20 and count that many steps in any direction.","Find something that makes a satisfying sound.","Take one photo that contains no straight lines.","Make a five-item ranking of something absurdly specific.","Find the brightest thing you can see that isn't a screen.","Change one tiny thing about your space that makes it more comfortable.","Invent a new flavor of ice cream that probably should not exist.","Go find a book and read one random page.","Make up a superhero whose power is based on the last thing you ate.","Find something you can fix in under two minutes.","Take a photo of something ordinary that looks mysterious up close.","Pick one object and sketch it without looking at the paper.","Write down one question you genuinely don't know the answer to, then find out.","Find something outside that has changed since the last time you noticed it.","Make a playlist with exactly four songs and an unnecessarily specific title.","See if you can make someone laugh in one text.","Find the tiniest sign of wear on something you use all the time.","Do a 60-second stretch wherever you are.","Create a fake movie title based on the last two objects you touched.","Find one thing you can prepare now that future-you will appreciate.","Take a picture of something with an interesting texture.","Try writing your name with your non-dominant hand.","Find the most unnecessary object in the room.","Make up a new word and define it.","Give an object nearby a one-star review.","Find something that reminds you of someone.","Look up one constellation you might be able to see tonight.","Put on a song and clean only until the song ends.","Find something shaped vaguely like a face.","Take a photo using only one color as the theme.","Write the opening sentence of a story you'll never have to finish.","Find one thing you've been meaning to charge and plug it in.","Make a tier list with at least five snacks, games, songs, or animals.","Go somewhere quiet and do absolutely nothing for two minutes.","Find a fact about your hometown you didn't know.","Create a new emoji combination and decide what it means.","Take a photo of the sky right now.","Pick one drawer, shelf, or tiny area and improve it for three minutes.","Find the funniest product review you can in five minutes.","Make a prediction about something completely unimportant that will happen tomorrow.","Write down three things that were less terrible than expected today.","Find something you haven't used in six months and decide whether you still want it.","Do one tiny thing that makes tomorrow morning easier."
+          ]
+          import json
+          arr=json.dumps(quests,ensure_ascii=False)
+          patterns=[r"const\s+quests\s*=\s*\[[\s\S]*?\];",r"const\s+sidequests\s*=\s*\[[\s\S]*?\];",r"const\s+sideQuests\s*=\s*\[[\s\S]*?\];"]
+          replaced=False
+          for pat in patterns:
+              m=re.search(pat,s)
+              if m:
+                  name=re.search(r"const\s+(\w+)",m.group(0)).group(1)
+                  s=s[:m.start()]+f"const {name}={arr};"+s[m.end():]
+                  replaced=True
+                  break
+          if not replaced:
+              raise SystemExit('Quest array target not found')
+          s=s.replace('🗑','×')
+          s += "\n<style>.icon-btn,.check-delete,.note-delete{font-size:1rem;line-height:1;width:30px;height:30px;padding:0;display:inline-grid;place-items:center;border-radius:999px;box-shadow:none}.event .icon-btn{width:30px;height:30px}.note-delete{align-self:flex-end}</style>\n"
+          p.write_text(s,encoding='utf-8')
+          print('Installed',len(quests),'sidequests')
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Add 100 sidequests and compact X delete controls"
+          git push
